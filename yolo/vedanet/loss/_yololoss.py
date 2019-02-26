@@ -35,12 +35,13 @@ class YoloLoss(nn.modules.loss._Loss):
         self.num_classes = num_classes
         self.num_anchors = len(anchors_mask)
         self.anchor_step = len(anchors[0])
-        self.anchors = torch.Tensor(anchors) / float(reduction)
+        self.anchors = torch.Tensor(anchors) / float(reduction) # 将在原始图片上的anchor尺寸转换为在输出特征图上的尺寸
         self.anchors_mask = anchors_mask
         self.reduction = reduction      
         self.seen = seen
         self.head_idx = head_idx
 
+        # 损失的权重
         self.coord_scale = coord_scale
         self.noobject_scale = noobject_scale
         self.object_scale = object_scale
@@ -89,15 +90,17 @@ class YoloLoss(nn.modules.loss._Loss):
         pred_boxes = torch.zeros(nB*nA*nH*nW, 4, dtype=torch.float, device=device)
         lin_x = torch.linspace(0, nW-1, nW).to(device).repeat(nH, 1).view(nH*nW)
         lin_y = torch.linspace(0, nH-1, nH).to(device).repeat(nW, 1).t().contiguous().view(nH*nW)
+        # 提取出需要的anchors
         anchor_w = self.anchors[self.anchors_mask, 0].view(nA, 1).to(device) 
         anchor_h = self.anchors[self.anchors_mask, 1].view(nA, 1).to(device)
 
+        # 依据公式对网络所预测的bbox的坐标、大小进行转换
         pred_boxes[:, 0] = (coord[:, :, 0].detach() + lin_x).view(-1)
         pred_boxes[:, 1] = (coord[:, :, 1].detach() + lin_y).view(-1)
         pred_boxes[:, 2] = (coord[:, :, 2].detach().exp() * anchor_w).view(-1)
         pred_boxes[:, 3] = (coord[:, :, 3].detach().exp() * anchor_h).view(-1)
 
-        # Get target values
+        # Get target values（将ground truth转换成计算损失所需的格式）
         coord_mask, conf_pos_mask, conf_neg_mask, cls_mask, tcoord, tconf, tcls = self.build_targets(pred_boxes, target, nH, nW)
         # coord
         coord_mask = coord_mask.expand_as(tcoord)[:,:,:2] # 0 = 1 = 2 = 3, only need first two element
@@ -109,7 +112,7 @@ class YoloLoss(nn.modules.loss._Loss):
             cls_mask = cls_mask.view(-1, 1).repeat(1, nC)
             cls = cls[cls_mask].view(-1, nC)
 
-        # criteria
+        # criteria  <-----
         self.bce = self.bce.to(device)
         self.mse = self.mse.to(device)
         self.smooth_l1 = self.smooth_l1.to(device)
@@ -121,10 +124,12 @@ class YoloLoss(nn.modules.loss._Loss):
         ce = self.ce
 
         # Compute losses
+        # bbox损失
         loss_coord_center = 2.0 * 1.0 * self.coord_scale * (coord_mask*bce(coord_center, tcoord_center)).sum()
         loss_coord_wh = 2.0 * 1.5 * self.coord_scale * (coord_mask*smooth_l1(coord_wh, tcoord_wh)).sum()
         self.loss_coord = loss_coord_center + loss_coord_wh
 
+        # 置信度损失，存在目标和不存在目标的cell分开计算
         loss_conf_pos = 1.0 * self.object_scale * (conf_pos_mask * bce(conf, tconf)).sum()
         loss_conf_neg = 1.0 * self.noobject_scale * (conf_neg_mask * bce(conf, tconf)).sum() 
         self.loss_conf = loss_conf_pos +  loss_conf_neg 
@@ -173,7 +178,7 @@ class YoloLoss(nn.modules.loss._Loss):
 
         recall50 = 0
         recall75 = 0
-        obj_all = 0
+        obj_all = 0 # 目标总数
         obj_cur = 0
         iou_sum = 0
         for b in range(nB):
@@ -191,6 +196,7 @@ class YoloLoss(nn.modules.loss._Loss):
                 anchors = torch.cat([torch.zeros_like(self.anchors), self.anchors], 1)
             gt = torch.zeros(len(ground_truth[b]), 4, device=device)
             for i, anno in enumerate(ground_truth[b]):
+                # 将真实标定转换为在输出特征图上的标定
                 gt[i, 0] = (anno.x_top_left + anno.width/2) / self.reduction
                 gt[i, 1] = (anno.y_top_left + anno.height/2) / self.reduction
                 gt[i, 2] = anno.width / self.reduction
