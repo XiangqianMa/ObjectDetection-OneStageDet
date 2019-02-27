@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 #   Copyright EAVISE
 #   Example: Transform annotations for VOCdevkit to the brambox pickle format
@@ -13,17 +12,15 @@ sys.path.insert(0, '.')
 import brambox.boxes as bbb
 
 DEBUG = True        # Enable some debug prints with extra information
-ROOT = '/data2/yichaoxiong/data/VOCdevkit'       # Root folder where the VOCdevkit is located
+ROOT = '/home/mxq/Project/data/VOCdevkit'       # Root folder where the VOCdevkit is located
 
 TRAINSET = [
     ('2012', 'train'),
-    ('2012', 'val'),
-    ('2007', 'train'),
-    ('2007', 'val'),
+    ('2012', 'val')
     ]
 
 TESTSET = [
-    ('2007', 'test'),
+    ('2012', 'test'),
     ]
 
 def identify(xml_file):

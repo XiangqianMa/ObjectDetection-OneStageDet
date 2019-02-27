@@ -5,12 +5,12 @@ log_name: "logs"
 
 labels: ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
 
-data_root_dir: "/data2/yichaoxiong/data/VOCdevkit/onedet_cache"
+data_root_dir: "/home/mxq/Project/data/VOCdevkit/onedet_cache"
 
 train:
     dataset: "train"
-    stdout: False
-    gpus: "6"
+    stdout: True
+    gpus: "0"
     nworkers: 16
     pin_mem: True
 
@@ -30,14 +30,14 @@ train:
     backup_rates: [10000]
 
     input_shape: [608, 608]
-    batch_size: 64
-    mini_batch_size: 16
+    batch_size: 8
+    mini_batch_size: 4
     weights: "weights/darknet53.conv.74"
 
 test:
     dataset: "test"
     stdout: True
-    gpus: "3"
+    gpus: "0"
     nworkers: 8
     pin_mem: True
 
