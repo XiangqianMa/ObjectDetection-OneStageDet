@@ -16,11 +16,13 @@ ROOT = '/home/mxq/Project/data/VOCdevkit'       # Root folder where the VOCdevki
 
 TRAINSET = [
     ('2012', 'train'),
-    ('2012', 'val')
+    ('2012', 'val'),
+    ('2007', 'train'),
+    ('2007', 'val')
     ]
 
 TESTSET = [
-    ('2012', 'test'),
+    ('2007', 'test'),
     ]
 
 def identify(xml_file):
