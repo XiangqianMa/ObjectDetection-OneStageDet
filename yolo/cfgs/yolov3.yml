@@ -30,8 +30,8 @@ train:
     backup_rates: [10000]
 
     input_shape: [608, 608]
-    batch_size: 8
-    mini_batch_size: 4
+    batch_size: 10
+    mini_batch_size: 5
     weights: "weights/darknet53.conv.74"
 
 test:
@@ -43,7 +43,7 @@ test:
 
     input_shape: [544, 544]
     batch_size: 8
-    weights: "weights/yolov3_50200.dw"
+    weights: "outputs/Yolov3/baseline/weights/final.dw"
 
     conf_thresh: 0.005
     nms_thresh: 0.45
