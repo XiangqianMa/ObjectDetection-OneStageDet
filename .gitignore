@@ -115,4 +115,7 @@ dmypy.json
 .pyre/
 
 # results
-./yolo/results/*
+
+yolo/results/
+yolo/outputs/
+yolo/weights/
